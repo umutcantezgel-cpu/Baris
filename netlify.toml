@@ -1,0 +1,116 @@
+# Netlify Configuration File
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Directory with the deploy-ready HTML files and assets
+  publish = "dist"
+
+  # Default build command
+  command = "npm run build"
+
+  # Node version for build environment
+  environment = { NODE_VERSION = "18" }
+
+# Redirect rules for Single Page Application (SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+# HTTP Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security Headers
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+    # Content Security Policy
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https: blob:;
+      connect-src 'self' https://www.google-analytics.com https://api.base44.com;
+      frame-ancestors 'self';
+      base-uri 'self';
+      form-action 'self';
+    """
+
+# Cache static assets for better performance
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Enable HTTPS redirects
+[[redirects]]
+  from = "http://baris-haustechnik.netlify.app/*"
+  to = "https://baris-haustechnik.netlify.app/:splat"
+  status = 301
+  force = true
+
+# 404 custom error page (SPA handles this)
+[[redirects]]
+  from = "/404"
+  to = "/index.html"
+  status = 404
+
+# Environment-specific settings
+[context.production]
+  command = "npm run build"
+  environment = { NODE_ENV = "production" }
+
+[context.deploy-preview]
+  command = "npm run build"
+  environment = { NODE_ENV = "development" }
+
+[context.branch-deploy]
+  command = "npm run build"
+
+# Dev server settings (for local development with netlify dev)
+[dev]
+  command = "npm run dev"
+  port = 3000
+  targetPort = 3000
+  publish = "dist"
+  autoLaunch = true
+
+# Functions (if needed in the future)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# Build plugins (optional)
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
+
+# Form submission settings
+[forms]
+  # Enable Netlify Forms (if using)
+  # This allows form submissions without backend code
